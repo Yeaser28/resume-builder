@@ -67,7 +67,7 @@ const HEADS = [
 ];
 const PALETTE = [
   "#1d5e46", "#1e3a5f", "#1f4fd8", "#334155", "#8f2a3a",
-  "#0f766e", "#7c3aed", "#b45309", "#0e7490", "#374151",
+  "#0f766e", "#7c3aed", "#b45309", "#0e7490", "#374151", "#111827",
 ];
 const TEMPLATES = (() => {
   const list = [];
@@ -163,7 +163,8 @@ export default function ResumeBuilder() {
   const paperRef = useRef(null);
 
   const tpl = TEMPLATES.find((t) => t.id === tplId) || TEMPLATES[0];
-  const activeColor = accent || tpl.color;
+  const isWhite = accent === "white";
+  const activeColor = isWhite ? "#161b26" : accent || tpl.color;
 
   useEffect(() => {
     try {
@@ -434,10 +435,18 @@ export default function ResumeBuilder() {
                       className="swatch"
                       style={{ background: c }}
                       aria-label={c}
-                      aria-pressed={activeColor === c}
+                      aria-pressed={!isWhite && activeColor === c}
                       onClick={() => setAccent(c)}
                     />
                   ))}
+                  <button
+                    type="button"
+                    className="swatch white"
+                    aria-label="White / black lines"
+                    title="White — black text and lines instead of colour"
+                    aria-pressed={isWhite}
+                    onClick={() => setAccent("white")}
+                  />
                 </div>
               </label>
             </fieldset>
@@ -625,6 +634,7 @@ export default function ResumeBuilder() {
               ref={paperRef}
               data-layout={tpl.layout}
               data-head={tpl.head}
+              data-white={isWhite ? "true" : undefined}
               style={{ "--accent": activeColor }}
               aria-label={isCV ? "CV preview" : "Resume preview"}
             >
@@ -771,6 +781,9 @@ const css = `
 .swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff;
   box-shadow: 0 0 0 1px var(--line); padding: 0; }
 .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ui); }
+.swatch.white { background: #fff; position: relative; }
+.swatch.white::after { content: ""; position: absolute; inset: 3px; border-radius: 50%;
+  background: linear-gradient(135deg, transparent 46%, var(--line) 46%, var(--line) 54%, transparent 54%); }
 
 .photo-row { display: flex; align-items: center; gap: 12px; }
 .photo-row img, .photo-row .ph { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; flex: none; }
@@ -857,13 +870,26 @@ const css = `
 .r-side .r-sec:first-of-type { margin-top: 0; }
 .r-side .r-sec h3 { color: #fff; }
 .r-side .r-sec h3 span { border-color: rgba(255,255,255,.55) !important; color: #fff; }
-.paper[data-head="boxed"] .r-side .r-sec h3 span { background: rgba(255,255,255,.18); }
+.paper:not([data-white="true"])[data-head="boxed"] .r-side .r-sec h3 span { background: rgba(255,255,255,.18); }
 .r-side .r-contact { flex-direction: column; gap: 4px; color: #fff; font-size: .82rem; word-break: break-word; }
 .r-side .chips span { border-color: rgba(255,255,255,.6); color: #fff; }
 .r-side .kv div { flex-direction: column; gap: 0; }
 .r-side .kv span { color: rgba(255,255,255,.75); min-width: 0; font-size: .75rem; }
 .r-side .kv b { color: #fff; }
 @media (max-width: 620px) { .paper[data-layout="sidebar"] { grid-template-columns: 1fr; } }
+
+/* ---- White / paper accent: black text and lines instead of a colour fill ---- */
+.paper[data-white="true"] .r-side { background: #f6f7f9; color: var(--ink); border-right: 1px solid var(--line); }
+.paper[data-white="true"] .r-side .r-sec h3, .paper[data-white="true"] .r-side .r-sec h3 span { color: var(--ink); }
+.paper[data-white="true"] .r-side .r-photo { border-color: var(--line); }
+.paper[data-white="true"] .r-side .r-contact { color: var(--ink); }
+.paper[data-white="true"] .r-side .chips span { border-color: var(--ink); color: var(--ink); }
+.paper[data-white="true"] .r-side .kv span { color: #6b7280; }
+.paper[data-white="true"] .r-side .kv b { color: var(--ink); }
+.paper[data-white="true"][data-head="boxed"] .r-sec h3 span { color: #fff; }
+.paper[data-white="true"] .r-side .r-sec h3 span { border-color: var(--ink) !important; color: var(--ink); }
+.paper[data-white="true"][data-head="boxed"] .r-side .r-sec h3 span { background: #1f2430; color: #fff; }
+.paper[data-white="true"][data-head="pill"] .r-side .r-sec h3 span { border-color: var(--ink) !important; }
 
 /* ----- Info ----- */
 .cv-info { max-width: 760px; margin: 44px auto 0; }
